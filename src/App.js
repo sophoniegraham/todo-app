@@ -9,9 +9,9 @@ function App() {
   const [filterCategory, setFilterCategory] = useState('All');
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
 
-  const categories = ['Work', 'Personal', 'Urgent'];
+  const categories = ['Professional', 'Personal', 'Urgent'];
   const categoryColors = {
-    Work: '#0EA5E9',
+    Professional: '#0EA5E9',
     Personal: '#8B5CF6',
     Urgent: '#EF4444'
   };
@@ -48,12 +48,12 @@ function App() {
     const trimmedInput = input.trim();
     
     if (trimmedInput === '') {
-      showNotification('⚠️ Please enter a task before adding!', 'error');
+      showNotification('Please enter a task before adding.', 'error');
       return;
     }
 
     if (trimmedInput.length > 100) {
-      showNotification('⚠️ Task is too long. Keep it under 100 characters.', 'error');
+      showNotification('Task is too long. Keep it under 100 characters.', 'error');
       return;
     }
 
@@ -67,13 +67,13 @@ function App() {
 
     setTasks([...tasks, newTask]);
     setInput('');
-    showNotification(`✅ Task added to ${category}!`, 'success');
+    showNotification(`Task added to ${category}`, 'success');
   };
 
   const handleDeleteTask = (id) => {
     const newTasks = tasks.filter((task) => task.id !== id);
     setTasks(newTasks);
-    showNotification('🗑️ Task deleted', 'info');
+    showNotification('Task deleted', 'info');
   };
 
   const handleToggleComplete = (id) => {
@@ -111,10 +111,10 @@ function App() {
 
   return (
     <div className="App">
-      {/* Glassmorphism Navbar */}
+      {/* Navbar */}
       <nav className="navbar">
         <div className="nav-content">
-          <h1 className="nav-logo">📋 TaskMaster Pro</h1>
+          <h1 className="nav-logo">TASKMASTER</h1>
           <div className="nav-links">
             <span className="nav-link">By Sophonie Graham</span>
           </div>
@@ -131,8 +131,8 @@ function App() {
       {/* Main Content */}
       <div className="container">
         <div className="hero-section">
-          <h1 className="title">My Task Manager</h1>
-          <p className="subtitle">Stay organized and productive 🚀</p>
+          <h1 className="title">Task Management System</h1>
+          <p className="subtitle">Organize your workflow efficiently</p>
         </div>
 
         {/* Stats Bar */}
@@ -185,14 +185,14 @@ function App() {
             maxLength="100"
           />
           <button onClick={handleAddTask} className="add-button">
-            <span>+</span> Add Task
+            Add Task
           </button>
         </div>
 
         {/* Search and Filter Section */}
         <div className="filter-section">
           <div className="search-container">
-            <span className="search-icon">🔍</span>
+            <span className="search-icon">Search</span>
             <input
               type="text"
               value={searchQuery}
@@ -227,9 +227,9 @@ function App() {
         <div className="tasks-container">
           {filteredTasks.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon">📋</div>
+              <div className="empty-icon">No Tasks</div>
               <h3>{searchQuery || filterCategory !== 'All' ? 'No matching tasks' : 'No tasks yet'}</h3>
-              <p>{searchQuery || filterCategory !== 'All' ? 'Try a different search or filter' : 'Add your first task to get started!'}</p>
+              <p>{searchQuery || filterCategory !== 'All' ? 'Try a different search or filter' : 'Add your first task to get started'}</p>
             </div>
           ) : (
             <div className="tasks-grid">
@@ -244,7 +244,7 @@ function App() {
                       className="delete-button"
                       aria-label="Delete task"
                     >
-                      ❌
+                      Delete
                     </button>
                   </div>
                   <div className="task-body">
@@ -265,7 +265,8 @@ function App() {
 
       {/* Footer */}
       <footer className="footer">
-        <p>Built with ❤️ by Sophonie Graham | © 2026</p>
+        <p>&copy; 2026 Sophonie Graham | sgraha04@gmail.com</p>
+        <p className="footer-location">United States</p>
       </footer>
     </div>
   );
