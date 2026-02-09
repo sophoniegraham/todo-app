@@ -4,7 +4,17 @@ import './App.css';
 function App() {
   const [tasks, setTasks] = useState([]);
   const [input, setInput] = useState('');
+  const [category, setCategory] = useState('Personal');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('All');
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
+
+  const categories = ['Work', 'Personal', 'Urgent'];
+  const categoryColors = {
+    Work: '#0EA5E9',
+    Personal: '#8B5CF6',
+    Urgent: '#EF4444'
+  };
 
   // Load tasks from localStorage on mount
   useEffect(() => {
@@ -50,13 +60,14 @@ function App() {
     const newTask = {
       id: Date.now(),
       text: trimmedInput,
+      category: category,
       completed: false,
       createdAt: new Date().toISOString()
     };
 
     setTasks([...tasks, newTask]);
     setInput('');
-    showNotification('✅ Task added successfully!', 'success');
+    showNotification(`✅ Task added to ${category}!`, 'success');
   };
 
   const handleDeleteTask = (id) => {
@@ -78,15 +89,32 @@ function App() {
     }
   };
 
-  const completedCount = tasks.filter(task => task.completed).length;
-  const activeCount = tasks.length - completedCount;
+  // Filter tasks based on search query and category filter
+  const filteredTasks = tasks.filter(task => {
+    const matchesSearch = task.text.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = filterCategory === 'All' || task.category === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const getTaskStats = () => {
+    const total = tasks.length;
+    const completed = tasks.filter(t => t.completed).length;
+    const active = total - completed;
+    return { total, completed, active };
+  };
+
+  const getCategoryCount = (cat) => {
+    return tasks.filter(t => t.category === cat && !t.completed).length;
+  };
+
+  const stats = getTaskStats();
 
   return (
     <div className="App">
       {/* Glassmorphism Navbar */}
       <nav className="navbar">
         <div className="nav-content">
-          <h1 className="nav-logo">📝 TodoPro</h1>
+          <h1 className="nav-logo">📋 TaskMaster Pro</h1>
           <div className="nav-links">
             <span className="nav-link">By Sophonie Graham</span>
           </div>
@@ -110,16 +138,38 @@ function App() {
         {/* Stats Bar */}
         <div className="stats-bar">
           <div className="stat">
-            <span className="stat-number">{tasks.length}</span>
+            <span className="stat-number">{stats.total}</span>
             <span className="stat-label">Total</span>
           </div>
           <div className="stat">
-            <span className="stat-number">{activeCount}</span>
+            <span className="stat-number">{stats.active}</span>
             <span className="stat-label">Active</span>
           </div>
           <div className="stat">
-            <span className="stat-number">{completedCount}</span>
+            <span className="stat-number">{stats.completed}</span>
             <span className="stat-label">Completed</span>
+          </div>
+        </div>
+
+        {/* Category Selector */}
+        <div className="category-selector">
+          <label className="category-label">Category:</label>
+          <div className="category-buttons">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setCategory(cat)}
+                className={`category-btn ${category === cat ? 'active' : ''}`}
+                style={{
+                  borderColor: category === cat ? categoryColors[cat] : 'transparent',
+                  color: category === cat ? categoryColors[cat] : 'var(--text-secondary)'
+                }}
+              >
+                <span className="category-dot" style={{ background: categoryColors[cat] }}></span>
+                {cat}
+                <span className="category-count">{getCategoryCount(cat)}</span>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -139,19 +189,65 @@ function App() {
           </button>
         </div>
 
+        {/* Search and Filter Section */}
+        <div className="filter-section">
+          <div className="search-container">
+            <span className="search-icon">🔍</span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search tasks..."
+              className="search-input"
+            />
+          </div>
+          <div className="filter-buttons">
+            <button
+              onClick={() => setFilterCategory('All')}
+              className={`filter-btn ${filterCategory === 'All' ? 'active' : ''}`}
+            >
+              All
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setFilterCategory(cat)}
+                className={`filter-btn ${filterCategory === cat ? 'active' : ''}`}
+                style={{
+                  borderColor: filterCategory === cat ? categoryColors[cat] : 'transparent'
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Tasks List */}
         <div className="tasks-container">
-          {tasks.length === 0 ? (
+          {filteredTasks.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">📋</div>
-              <h3>No tasks yet</h3>
-              <p>Add your first task to get started!</p>
+              <h3>{searchQuery || filterCategory !== 'All' ? 'No matching tasks' : 'No tasks yet'}</h3>
+              <p>{searchQuery || filterCategory !== 'All' ? 'Try a different search or filter' : 'Add your first task to get started!'}</p>
             </div>
           ) : (
-            <ul className="tasks-list">
-              {tasks.map((task) => (
-                <li key={task.id} className={`task-item ${task.completed ? 'completed' : ''}`}>
-                  <div className="task-content">
+            <div className="tasks-grid">
+              {filteredTasks.map((task) => (
+                <div key={task.id} className={`task-card ${task.completed ? 'completed' : ''}`}>
+                  <div className="task-header">
+                    <div className="task-category-badge" style={{ background: categoryColors[task.category] }}>
+                      {task.category}
+                    </div>
+                    <button
+                      onClick={() => handleDeleteTask(task.id)}
+                      className="delete-button"
+                      aria-label="Delete task"
+                    >
+                      ❌
+                    </button>
+                  </div>
+                  <div className="task-body">
                     <input
                       type="checkbox"
                       checked={task.completed}
@@ -160,23 +256,16 @@ function App() {
                     />
                     <span className="task-text">{task.text}</span>
                   </div>
-                  <button
-                    onClick={() => handleDeleteTask(task.id)}
-                    className="delete-button"
-                    aria-label="Delete task"
-                  >
-                    ❌
-                  </button>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
       </div>
 
       {/* Footer */}
       <footer className="footer">
-        <p>Built with ❤️ by Sophonie Graham | © 2025</p>
+        <p>Built with ❤️ by Sophonie Graham | © 2026</p>
       </footer>
     </div>
   );
